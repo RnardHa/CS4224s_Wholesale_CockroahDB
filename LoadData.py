@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# Not used anymore
+
 import time
 import random
 import logging
@@ -156,7 +158,8 @@ def create_order(conn):
     conn.commit()
 
     with conn.cursor() as cur:
-        with open('project-files/data-files/order.csv', 'r') as f:
+        print("orderssplit14.csv")
+        with open('project-files/data-files/orderssplit14.csv', 'r') as f:
             f = csv.reader(f)
             count = 0
             for row in f:
@@ -182,7 +185,8 @@ def create_item(conn):
     conn.commit()
 
     with conn.cursor() as cur:
-        with open('project-files/data-files/item.csv', 'r') as f:
+        print("itemsplit04")
+        with open('project-files/data-files/itemsplit04.csv', 'r') as f:
             f = csv.reader(f)
             count = 0
             for row in f:
@@ -207,7 +211,8 @@ def create_orderLine(conn):
     conn.commit()
 
     with conn.cursor() as cur:
-        with open('project-files/data-files/order-line.csv', 'r') as f:
+        print("olsplit00")
+        with open('project-files/data-files/olsplit00.csv', 'r') as f:
             f = csv.reader(f)
             count = 0
             for row in f:
@@ -216,7 +221,7 @@ def create_orderLine(conn):
                     print(count)
                     print("ol")
                 cur.execute(
-                    "INSERT INTO orderLine VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", row)
+                    "INSERT INTO orderLine VALUES (%s, %s, %s, %s, %s, NULLIF(%s,'null'), %s, %s, %s, %s)", row)
         logging.debug("create_orderLine(): status message: %s",
                       cur.statusmessage)
     conn.commit()
@@ -317,10 +322,10 @@ def main():
 
     # create_warehouse(conn)
     # create_district(conn)
-    create_customer(conn)
+    # create_customer(conn)
     # create_order(conn)
     # create_item(conn)
-    # create_orderLine(conn)
+    create_orderLine(conn)
     # create_stock(conn)
 
     # try:
@@ -346,7 +351,8 @@ def parse_cmdline():
     parser.add_argument(
         "--dsn",
         # default="postgresql://root@localhost:26257/test?sslmode=disable",
-        default="postgresql://root@192.168.48.194:26267/wholesale?sslmode=disable",
+        # default="postgresql://root@192.168.48.194:26267/wholesale?sslmode=disable",
+        default="postgresql://root@192.168.48.194:26272/wholesale?sslmode=disable",
         help="database connection string [default: %(default)s]",
     )
 
