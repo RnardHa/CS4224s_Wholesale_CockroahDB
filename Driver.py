@@ -7,6 +7,8 @@ from argparse import ArgumentParser
 import sys
 import getopt
 import time
+import numpy as np
+import csv
 
 import psycopg2
 from psycopg2.errors import SerializationFailure
@@ -75,18 +77,25 @@ def test_retry_loop(conn):
 
 
 def main():
-    opt = parse_cmdline()
-    logging.basicConfig(level=logging.DEBUG if opt.verbose else logging.INFO)
+    # opt = parse_cmdline()
+    # logging.basicConfig(level=logging.DEBUG if opt.verbose else logging.INFO)
 
-    conn = psycopg2.connect(opt.dsn)
+    # conn = psycopg2.connect(opt.dsn)
 
     # read input data
-    # numOfServer = input("Number of running server: ")
-    numClient = input("Number of Client: ")
+    exp = {'5': '1', '6': '20', '7': '40', '8': '40'}
+    exp_num = input("Experiment Number: ")
+    numClient = exp[exp_num]
     fileNum = 1
-    start = time.time()
+    transactionTimeCol = []
     while(fileNum <= int(numClient)):
-        fileName = str(fileNum) + '.txt'
+        # When new file(client) is read, load balancer will select different node to run the queries.
+        opt = parse_cmdline()
+        logging.basicConfig(
+            level=logging.DEBUG if opt.verbose else logging.INFO)
+        conn = psycopg2.connect(opt.dsn)
+
+        fileName = "project-files/xact-files/" + str(fileNum) + '.txt'
         print(fileName)
         readFile = open(fileName, 'r')
         lines = readFile.readlines()
@@ -94,6 +103,7 @@ def main():
         xList = []
         cList = []
         for i in range(0, len(lines)):
+            start = time.time()
             line = lines[i].strip()
             split = line.split(',')
 
@@ -129,138 +139,175 @@ def main():
 
                 cList.clear()
                 xList.clear()
+                end = time.time()
             elif(xactType == 'P'):
                 for i in range(1, 5):
                     xList.append(split[i])
 
-                try:
-                    run_transaction(
-                        conn, lambda conn: PaymentTransaction.make_payment(conn, xList))
+                # try:
+                #     run_transaction(
+                #         conn, lambda conn: PaymentTransaction.make_payment(conn, xList))
 
-                    # The function below is used to test the transaction retry logic.  It
-                    # can be deleted from production code.
-                    # run_transaction(conn, test_retry_loop)
-                except ValueError as ve:
-                    # Below, we print the error and continue on so this example is easy to
-                    # run (and run, and run...).  In real code you should handle this error
-                    # and any others thrown by the database interaction.
-                    logging.debug("run_transaction(conn, op) failed: %s", ve)
-                    pass
+                #     # The function below is used to test the transaction retry logic.  It
+                #     # can be deleted from production code.
+                #     # run_transaction(conn, test_retry_loop)
+                # except ValueError as ve:
+                #     # Below, we print the error and continue on so this example is easy to
+                #     # run (and run, and run...).  In real code you should handle this error
+                #     # and any others thrown by the database interaction.
+                #     logging.debug("run_transaction(conn, op) failed: %s", ve)
+                #     pass
                 xList.clear()
+                end = time.time()
             elif(xactType == 'D'):
                 for i in range(1, 3):
                     xList.append(split[i])
 
-                try:
-                    run_transaction(
-                        conn, lambda conn: DeliveryTransaction.make_delivery(conn, xList))
+                # try:
+                #     run_transaction(
+                #         conn, lambda conn: DeliveryTransaction.make_delivery(conn, xList))
 
-                    # The function below is used to test the transaction retry logic.  It
-                    # can be deleted from production code.
-                    # run_transaction(conn, test_retry_loop)
-                except ValueError as ve:
-                    # Below, we print the error and continue on so this example is easy to
-                    # run (and run, and run...).  In real code you should handle this error
-                    # and any others thrown by the database interaction.
-                    logging.debug("run_transaction(conn, op) failed: %s", ve)
-                    pass
+                #     # The function below is used to test the transaction retry logic.  It
+                #     # can be deleted from production code.
+                #     # run_transaction(conn, test_retry_loop)
+                # except ValueError as ve:
+                #     # Below, we print the error and continue on so this example is easy to
+                #     # run (and run, and run...).  In real code you should handle this error
+                #     # and any others thrown by the database interaction.
+                #     logging.debug("run_transaction(conn, op) failed: %s", ve)
+                #     pass
                 xList.clear()
+                end = time.time()
             elif(xactType == 'O'):
                 # print("O")
                 for i in range(1, 4):
                     xList.append(split[i])
 
-                try:
-                    run_transaction(
-                        conn, lambda conn: OrderStatusTransaction.req_order_status(conn, xList))
+                # try:
+                #     run_transaction(
+                #         conn, lambda conn: OrderStatusTransaction.req_order_status(conn, xList))
 
-                    # The function below is used to test the transaction retry logic.  It
-                    # can be deleted from production code.
-                    # run_transaction(conn, test_retry_loop)
-                except ValueError as ve:
-                    # Below, we print the error and continue on so this example is easy to
-                    # run (and run, and run...).  In real code you should handle this error
-                    # and any others thrown by the database interaction.
-                    logging.debug("run_transaction(conn, op) failed: %s", ve)
-                    pass
+                #     # The function below is used to test the transaction retry logic.  It
+                #     # can be deleted from production code.
+                #     # run_transaction(conn, test_retry_loop)
+                # except ValueError as ve:
+                #     # Below, we print the error and continue on so this example is easy to
+                #     # run (and run, and run...).  In real code you should handle this error
+                #     # and any others thrown by the database interaction.
+                #     logging.debug("run_transaction(conn, op) failed: %s", ve)
+                #     pass
                 xList.clear()
+                end = time.time()
             elif(xactType == 'S'):
                 for i in range(1, 5):
                     xList.append(split[i])
 
-                try:
-                    run_transaction(
-                        conn, lambda conn: StockLevelTransaction.get_stock_level(conn, xList))
+                # try:
+                #     run_transaction(
+                #         conn, lambda conn: StockLevelTransaction.get_stock_level(conn, xList))
 
-                    # The function below is used to test the transaction retry logic.  It
-                    # can be deleted from production code.
-                    # run_transaction(conn, test_retry_loop)
-                except ValueError as ve:
-                    # Below, we print the error and continue on so this example is easy to
-                    # run (and run, and run...).  In real code you should handle this error
-                    # and any others thrown by the database interaction.
-                    logging.debug("run_transaction(conn, op) failed: %s", ve)
-                    pass
+                #     # The function below is used to test the transaction retry logic.  It
+                #     # can be deleted from production code.
+                #     # run_transaction(conn, test_retry_loop)
+                # except ValueError as ve:
+                #     # Below, we print the error and continue on so this example is easy to
+                #     # run (and run, and run...).  In real code you should handle this error
+                #     # and any others thrown by the database interaction.
+                #     logging.debug("run_transaction(conn, op) failed: %s", ve)
+                #     pass
                 xList.clear()
+                end = time.time()
             elif(xactType == 'I'):
                 for i in range(1, 4):
                     xList.append(split[i])
 
-                try:
-                    run_transaction(
-                        conn, lambda conn: PopularItemTransaction.get_popular_item(conn, xList))
+                # try:
+                #     run_transaction(
+                #         conn, lambda conn: PopularItemTransaction.get_popular_item(conn, xList))
 
-                    # The function below is used to test the transaction retry logic.  It
-                    # can be deleted from production code.
-                    # run_transaction(conn, test_retry_loop)
-                except ValueError as ve:
-                    # Below, we print the error and continue on so this example is easy to
-                    # run (and run, and run...).  In real code you should handle this error
-                    # and any others thrown by the database interaction.
-                    logging.debug("run_transaction(conn, op) failed: %s", ve)
-                    pass
+                #     # The function below is used to test the transaction retry logic.  It
+                #     # can be deleted from production code.
+                #     # run_transaction(conn, test_retry_loop)
+                # except ValueError as ve:
+                #     # Below, we print the error and continue on so this example is easy to
+                #     # run (and run, and run...).  In real code you should handle this error
+                #     # and any others thrown by the database interaction.
+                #     logging.debug("run_transaction(conn, op) failed: %s", ve)
+                #     pass
                 xList.clear()
+                end = time.time()
             elif(xactType == 'T'):
                 print("T")
-                try:
-                    run_transaction(
-                        conn, lambda conn: TopBalanceTransaction.get_top_balance(conn))
+                # try:
+                #     run_transaction(
+                #         conn, lambda conn: TopBalanceTransaction.get_top_balance(conn))
 
-                    # The function below is used to test the transaction retry logic.  It
-                    # can be deleted from production code.
-                    # run_transaction(conn, test_retry_loop)
-                except ValueError as ve:
-                    # Below, we print the error and continue on so this example is easy to
-                    # run (and run, and run...).  In real code you should handle this error
-                    # and any others thrown by the database interaction.
-                    logging.debug("run_transaction(conn, op) failed: %s", ve)
-                    pass
+                #     # The function below is used to test the transaction retry logic.  It
+                #     # can be deleted from production code.
+                #     # run_transaction(conn, test_retry_loop)
+                # except ValueError as ve:
+                #     # Below, we print the error and continue on so this example is easy to
+                #     # run (and run, and run...).  In real code you should handle this error
+                #     # and any others thrown by the database interaction.
+                #     logging.debug("run_transaction(conn, op) failed: %s", ve)
+                #     pass
+                end = time.time()
             elif(xactType == 'R'):
                 for i in range(1, 4):
                     xList.append(split[i])
 
-                try:
-                    run_transaction(
-                        conn, lambda conn: RelatedCustomerTransaction.get_related_customer(conn, xList))
+                # try:
+                #     run_transaction(
+                #         conn, lambda conn: RelatedCustomerTransaction.get_related_customer(conn, xList))
 
-                    # The function below is used to test the transaction retry logic.  It
-                    # can be deleted from production code.
-                    # run_transaction(conn, test_retry_loop)
-                except ValueError as ve:
-                    # Below, we print the error and continue on so this example is easy to
-                    # run (and run, and run...).  In real code you should handle this error
-                    # and any others thrown by the database interaction.
-                    logging.debug("run_transaction(conn, op) failed: %s", ve)
-                    pass
+                #     # The function below is used to test the transaction retry logic.  It
+                #     # can be deleted from production code.
+                #     # run_transaction(conn, test_retry_loop)
+                # except ValueError as ve:
+                #     # Below, we print the error and continue on so this example is easy to
+                #     # run (and run, and run...).  In real code you should handle this error
+                #     # and any others thrown by the database interaction.
+                #     logging.debug("run_transaction(conn, op) failed: %s", ve)
+                #     pass
                 xList.clear()
+                end = time.time()
 
-                # Load next file
+            # end = time.time()
+            transactionTimeCol.append(end-start)
+
+        # Load next file
         fileNum = fileNum + 1
 
     # Close communication with the database.
     conn.close()
-    end = time.time()
-    print(end-start)
+    # print("Minutes taken: {:.2f}".format(end-start))
+    output_transactions_stats(transactionTimeCol, exp_num, numClient)
+
+
+def output_transactions_stats(transactionTime, exp_num, clientNum):
+    with open('throughput.csv', 'w', newline='') as file:
+        transactionTime = [i for i in transactionTime if i > 0.0]
+        num_xacts = len(transactionTime)
+        totalSec = sum(transactionTime)  # second
+        throughput = num_xacts / totalSec
+        toMs = totalSec * 1000
+        average = toMs / num_xacts
+        median = np.percentile(transactionTime, 50)
+        percentile95 = np.percentile(transactionTime, 95)
+        percentile99 = np.percentile(transactionTime, 99)
+        print("Number of Transactions: {}".format(num_xacts), file=sys.stderr)
+        print("Total Transactions Time: {} sec".format(totalSec), file=sys.stderr)
+        print("Throughput: {} xacts/sec".format(throughput), file=sys.stderr)
+        print("Average Transaction Latency: {} ms".format(
+            average), file=sys.stderr)
+        print("Median Transaction Latency: {} ms".format(median), file=sys.stderr)
+        print("95th Percentile Transaction Latrency: {} ms".format(
+            percentile95), file=sys.stderr)
+        print("99th Percentile Transaction Latrency: {} ms".format(
+            percentile99), file=sys.stderr)
+        writer = csv.writer(file)
+        writer.writerow([exp_num, clientNum, num_xacts, totalSec,
+                         throughput, average, median, percentile95, percentile99])
 
 
 def parse_cmdline():
