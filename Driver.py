@@ -83,7 +83,7 @@ def main():
     # conn = psycopg2.connect(opt.dsn)
 
     # read input data
-    exp = {'5': '1', '6': '20', '7': '40', '8': '40'}
+    exp = {'5': '20', '6': '20', '7': '40', '8': '40'}
     exp_num = input("Experiment Number: ")
     numClient = exp[exp_num]
     fileNum = 1
