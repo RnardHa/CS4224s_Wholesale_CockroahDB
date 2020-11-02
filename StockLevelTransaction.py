@@ -5,6 +5,8 @@ import logging
 
 # S,W ID,D ID,T,L
 
+debug = False
+
 
 def get_stock_level(conn, data):
     # data
@@ -15,6 +17,7 @@ def get_stock_level(conn, data):
 
     # print("Data {}, {}, {}, {}".format(w_id, d_id, t, l))
     print("-----Stock Level-----")
+    logging.info("-----Stock Level-----")
 
     district = get_district(conn, w_id, d_id)
     d_next_o_id = district
@@ -29,9 +32,13 @@ def get_stock_level(conn, data):
         itemsSet.add(item)
 
     count = get_stock_count(conn, w_id, itemsSet, t)
-    print("W_ID: {}".format(w_id))
-    print("Number of items with S_Quantity < {}: {}".format(t, count))
-    print()
+    if debug:
+        print("W_ID: {}".format(w_id))
+        print("Number of items with S_Quantity < {}: {}".format(t, count))
+        print()
+
+    logging.info("[W_ID, Num_I with S_Quantity < {}]".format(t))
+    logging.info("{}, {}".format(w_id, count))
 
 
 def get_district(conn, warehouse_id, district_id):

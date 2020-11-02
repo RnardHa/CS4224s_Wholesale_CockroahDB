@@ -6,6 +6,8 @@ import datetime
 
 # O,C W ID,C D ID,C ID.
 
+debug = False
+
 
 def req_order_status(conn, data):
     # data
@@ -15,36 +17,52 @@ def req_order_status(conn, data):
 
     # print("Data {}, {}, {}".format(c_w_id, c_d_id, c_id))
     print("-----Order Status-----")
+    logging.info("-----Order Status-----")
 
     # customer information
     customer = get_customer(conn, c_w_id, c_d_id, c_id)
-    print(f"Customer at {time.asctime()}:")
+    if debug:
+        print(f"Customer at {time.asctime()}:")
+        for row in customer:
+            print("Name: {} {} {}".format(row[0], row[1], row[2]))
+            print("Balance: {}".format(row[3]))
+            print()
     for row in customer:
-        print("Name: {} {} {}".format(row[0], row[1], row[2]))
-        print("Balance: {}".format(row[3]))
-        print()
+        logging.info("[Name, Balance]")
+        logging.info("{} {} {}, {}".format(row[0], row[1], row[2], row[3]))
 
     # customer last order
     order = get_last_order(conn, c_w_id, c_d_id, c_id)
-    print(f"Customer's last order at {time.asctime()}:")
+    if debug:
+        print(f"Customer's last order at {time.asctime()}:")
     for row in order:
         o_id = row[0]
-        print("Order ID: {}".format(o_id))
-        print("Entry Date and Time: {}".format(row[1]))
-        print("Carrier Identifier: {}".format(row[2]))
-        print()
+        if debug:
+            print("Order ID: {}".format(o_id))
+            print("Entry Date and Time: {}".format(row[1]))
+            print("Carrier Identifier: {}".format(row[2]))
+            print()
+        logging.info("[O_ID, Entry Date, Carrier_ID]")
+        logging.info("{}, {}, {}".format(o_id, row[1], row[2]))
 
     # for each item in customer last order, display
     orderList = get_order_list(conn, c_w_id, c_d_id, o_id)
-    print(f"Items {time.asctime()}:")
+    if debug:
+        print(f"Items {time.asctime()}:")
+        for row in orderList:
+            print("Item Number: {}".format(row[0]))
+            print("Supply Warehouse Number: {}".format(row[1]))
+            print("Quantity Ordered: {}".format(row[2]))
+            print("Total Price: {}".format(row[3]))
+            print("Data and Time of Delivery: {}".format(row[4]))
+            print("--------------------------------------------------")
+            print()
+
     for row in orderList:
-        print("Item Number: {}".format(row[0]))
-        print("Supply Warehouse Number: {}".format(row[1]))
-        print("Quantity Ordered: {}".format(row[2]))
-        print("Total Price: {}".format(row[3]))
-        print("Data and Time of Delivery: {}".format(row[4]))
-        print("--------------------------------------------------")
-        print()
+        logging.info(
+            "[I_Num, Sup_W, Quantity, Total_Price, Date and Time Delivery]")
+        logging.info("{}, {}, {}, {}, {}".format(
+            row[0], row[1], row[2], row[3], row[4]))
 
 
 def get_customer(conn, warehouse_id, district_id, customer_id):
@@ -57,8 +75,6 @@ def get_customer(conn, warehouse_id, district_id, customer_id):
         conn.commit()
 
         return rows
-
-# database does not have enough data to test if user has multiple orders
 
 
 def get_last_order(conn, warehouse_id, district_id, customer_id):

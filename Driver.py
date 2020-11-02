@@ -22,6 +22,8 @@ import PopularItemTransaction
 import TopBalanceTransaction
 import RelatedCustomerTransaction
 
+debug = False
+
 
 def run_transaction(conn, op, max_retries=3):
     """
@@ -77,22 +79,20 @@ def test_retry_loop(conn):
 
 
 def main():
-    # opt = parse_cmdline()
-    # logging.basicConfig(level=logging.DEBUG if opt.verbose else logging.INFO)
+    opt = parse_cmdline()
 
-    # conn = psycopg2.connect(opt.dsn)
-
-    # read input data
+    # EXP num - cleint pair
     exp = {'5': '20', '6': '20', '7': '40', '8': '40'}
-    exp_num = input("Experiment Number: ")
-    numClient = exp[exp_num]
+    exp_num = opt.exp_num
+    numClient = exp[opt.exp_num]
     fileNum = 1
     transactionTimeCol = []
     while(fileNum <= int(numClient)):
         # When new file(client) is read, load balancer will select different node to run the queries.
-        opt = parse_cmdline()
-        logging.basicConfig(
-            level=logging.DEBUG if opt.verbose else logging.INFO)
+        log_name = str(fileNum) + '-log.log'
+        logging.basicConfig(filename=log_name, filemode='a',
+                            format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
+
         conn = psycopg2.connect(opt.dsn)
 
         fileName = "project-files/xact-files/" + str(fileNum) + '.txt'
@@ -292,7 +292,7 @@ def main():
 
 
 def output_transactions_stats(transactionTime, exp_num, clientNum):
-    with open('throughput.csv', 'w', newline='') as file:
+    with open('clients.csv', 'a+', newline='') as file:
         transactionTime = [i for i in transactionTime if i > 0.0]
         num_xacts = len(transactionTime)
         totalSec = sum(transactionTime)  # second
@@ -302,16 +302,21 @@ def output_transactions_stats(transactionTime, exp_num, clientNum):
         median = np.percentile(transactionTime, 50)
         percentile95 = np.percentile(transactionTime, 95)
         percentile99 = np.percentile(transactionTime, 99)
-        print("Number of Transactions: {}".format(num_xacts), file=sys.stderr)
-        print("Total Transactions Time: {} sec".format(totalSec), file=sys.stderr)
-        print("Throughput: {} xacts/sec".format(throughput), file=sys.stderr)
-        print("Average Transaction Latency: {} ms".format(
-            average), file=sys.stderr)
-        print("Median Transaction Latency: {} ms".format(median), file=sys.stderr)
-        print("95th Percentile Transaction Latrency: {} ms".format(
-            percentile95), file=sys.stderr)
-        print("99th Percentile Transaction Latrency: {} ms".format(
-            percentile99), file=sys.stderr)
+        if debug:
+            print("Number of Transactions: {}".format(
+                num_xacts), file=sys.stderr)
+            print("Total Transactions Time: {} sec".format(
+                totalSec), file=sys.stderr)
+            print("Throughput: {} xacts/sec".format(throughput), file=sys.stderr)
+            print("Average Transaction Latency: {} ms".format(
+                average), file=sys.stderr)
+            print("Median Transaction Latency: {} ms".format(
+                median), file=sys.stderr)
+            print("95th Percentile Transaction Latrency: {} ms".format(
+                percentile95), file=sys.stderr)
+            print("99th Percentile Transaction Latrency: {} ms".format(
+                percentile99), file=sys.stderr)
+            print()
         writer = csv.writer(file)
         writer.writerow([exp_num, clientNum, num_xacts, totalSec,
                          throughput, average, median, percentile95, percentile99])
@@ -328,7 +333,10 @@ def parse_cmdline():
     parser.add_argument("-v", "--verbose",
                         action="store_true", help="print debug info")
 
+    parser.add_argument("-EN", "--experiment_number",
+                        action="store", required=True, dest="exp_num")
     opt = parser.parse_args()
+
     return opt
 
 

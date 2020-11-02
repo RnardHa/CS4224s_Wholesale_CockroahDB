@@ -8,6 +8,8 @@ from decimal import Decimal
 # P,C W ID,C D ID,C ID,PAYMENT.
 # P,1,2,40,723.94
 
+debug = False
+
 
 def make_payment(conn, data):
     # update warehouse C_W_ID --> increment W_YTD + PAYMENT
@@ -25,6 +27,7 @@ def make_payment(conn, data):
     # 3. District’s address (D STREET 1, D STREET 2, D CITY, D STATE, D ZIP)
     # 4. Payment amount PAYMENT
     with conn.cursor() as cur:
+        logging.info("-----Payment-----")
         print("-----Payment-----")
         # data
         c_w_id = data[0]
@@ -60,18 +63,28 @@ def make_payment(conn, data):
                       cur.statusmessage)
         rows = cur.fetchall()
         conn.commit()
-        print(f"Customer at {time.asctime()}:")
+        if debug:
+            print(f"Customer at {time.asctime()}:")
+            for row in rows:
+                print("Customer's Identifier: {}, {}, {}".format(
+                    c_w_id, c_d_id, c_id))
+                print("Name: {} {} {}".format(row[0], row[1], row[2]))
+                print("Address: {}, {}, {}, {}, {}".format(
+                    row[3], row[4], row[5], row[6], row[7]))
+                print("Phone: {}".format(row[8]))
+                print("Since: {}".format(row[9]))
+                print("Credit: {}".format(row[10]))
+                print("Credit Limit: {}".format(row[11]))
+                print("Discount: {}".format(row[12]))
+                print("Balance: {}".format(row[13]))
+
         for row in rows:
-            print("Customer's Identifier: {}, {}, {}".format(c_w_id, c_d_id, c_id))
-            print("Name: {} {} {}".format(row[0], row[1], row[2]))
-            print("Address: {}, {}, {}, {}, {}".format(
-                row[3], row[4], row[5], row[6], row[7]))
-            print("Phone: {}".format(row[8]))
-            print("Since: {}".format(row[9]))
-            print("Credit: {}".format(row[10]))
-            print("Credit Limit: {}".format(row[11]))
-            print("Discount: {}".format(row[12]))
-            print("Balance: {}".format(row[13]))
+            logging.info(
+                "[C_ID, Name,  Address, Phone, Since, Credit, C_Limit, Discount, Balance]")
+            logging.info(
+                "[{} {} {}, {} {} {}, {} {} {} {} {}, {}, {}, {}, {}, {}, {}]".format(c_w_id, c_d_id, c_id, row[0], row[1], row[2], row[3], row[4], row[5], row[6],
+                                                                                      row[7], row[8], row[9], row[10], row[11], row[12], row[13]))
+
             # print(row)
 
         cur.execute(
@@ -80,11 +93,17 @@ def make_payment(conn, data):
                       cur.statusmessage)
         rows = cur.fetchall()
         conn.commit()
-        print()
-        print(f"Warehouse at {time.asctime()}:")
+        if debug:
+            print()
+            print(f"Warehouse at {time.asctime()}:")
+            for row in rows:
+                print("Warehouse's Address: {}, {}, {}, {}, {}".format(
+                    row[0], row[1], row[2], row[3], row[4]))
         for row in rows:
-            print("Warehouse's Address: {}, {}, {}, {}, {}".format(
+            logging.info("[W_Address]")
+            logging.info("{} {} {} {} {}".format(
                 row[0], row[1], row[2], row[3], row[4]))
+
             # print(row)
 
         cur.execute(
@@ -93,13 +112,22 @@ def make_payment(conn, data):
                       cur.statusmessage)
         rows = cur.fetchall()
         conn.commit()
-        print()
-        print(f"District at {time.asctime()}:")
+        if debug:
+            print()
+            print(f"District at {time.asctime()}:")
+            for row in rows:
+                print("District's Address: {}, {}, {}, {}, {}".format(
+                    row[0], row[1], row[2], row[3], row[4]))
+
         for row in rows:
-            print("District's Address: {}, {}, {}, {}, {}".format(
+            logging.info("[D_Address]")
+            logging.info("{} {} {} {} {}".format(
                 row[0], row[1], row[2], row[3], row[4]))
             # print(row)
 
-        print()
-        print("Payment Amount: {}".format(payment))
-        print()
+        if debug:
+            print()
+            print("Payment Amount: {}".format(payment))
+            print()
+        logging.info("[Payment Amount]")
+        logging.info("{}".format(payment))

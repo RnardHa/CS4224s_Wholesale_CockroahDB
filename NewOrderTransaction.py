@@ -10,6 +10,8 @@ from decimal import Decimal
 
 # OL I ID,OL SUPPLY W ID,OL QUANTITY.
 
+debug = False
+
 
 def make_new_order(conn, c_data, data):
     # for n in data:
@@ -19,6 +21,7 @@ def make_new_order(conn, c_data, data):
     # increment N by 1
     # create new order
     print("-----New Order-----")
+    logging.info("-----New Order-----")
     with conn.cursor() as cur:
         # data
         c_id = c_data[0]
@@ -32,20 +35,33 @@ def make_new_order(conn, c_data, data):
         # print(o_id)
         o_all_local = id_all_local(w_id, data)
         # print(o_all_local)
-        insert_order(conn, w_id, d_id, o_id, c_id, m, o_all_local)
+        insert = insert_order(conn, w_id, d_id, o_id, c_id, m, o_all_local)
+        o_entry_d = insert
         o_id += 1
         update_d_new_id(conn, w_id, d_id, o_id)
 
         customer = get_customer(conn, w_id, d_id, c_id)
-        print("Customer Identifier: {} {} {}".format(w_id, d_id, c_id))
-        print("Customer Last Name: {}".format(customer[0]))
-        print("Customer Credit: {}".format(customer[1]))
-        print("Customer Discount: {}".format(customer[2]))
-        print()
+        if debug:
+            print("Customer Identifier: {} {} {}".format(w_id, d_id, c_id))
+            print("Customer Last Name: {}".format(customer[0]))
+            print("Customer Credit: {}".format(customer[1]))
+            print("Customer Discount: {}".format(customer[2]))
+            print()
+
+        logging.info(
+            "C_ID \tC_Last \t\tC_Credit \tC_Discount")
+        logging.info("{} {} {} \t{} \t{} \t\t{}".format(
+            w_id, d_id, c_id, customer[0], customer[1], customer[2]))
 
         d_tax = district[1]
         warehouse = get_warehouse(conn, w_id)
-        print("Warehouse Tax: {} \nDistrict Tax: {} \n".format(warehouse, d_tax))
+        if debug:
+            print("Warehouse Tax: {} \nDistrict Tax: {} \n".format(warehouse, d_tax))
+
+        logging.info(
+            "W_Tax \tD_Tax")
+        logging.info(
+            "{} \t{}".format(warehouse, d_tax))
 
         curr_o_id = o_id - 1
         totalAmount = insert_orderLine(conn, w_id, d_id, curr_o_id, data)
@@ -55,7 +71,16 @@ def make_new_order(conn, c_data, data):
 
         totalAmount = totalAmount * (1 + warehouse + d_tax) * c_disc
         # print(totalAmount)
-        print("Num Items: {} \nTotal Amount: {:.2f}\n".format(m, totalAmount))
+        if debug:
+            print("Order ID: {} \nOrder Entry Date: {}".format(
+                curr_o_id, o_entry_d))
+            print("Num Items: {} \nTotal Amount: {:.2f}\n".format(m, totalAmount))
+            print()
+
+        logging.info("Order ID \tOrder Entry Date")
+        logging.info("{} \t{}".format(curr_o_id, o_entry_d))
+        logging.info("Num Items \tTotal Amount")
+        logging.info("{} \t\t{:.2f}".format(m, totalAmount))
 
 
 def get_district(conn, warehouse_id, district_id):
@@ -63,7 +88,7 @@ def get_district(conn, warehouse_id, district_id):
         # get next available oder id
         cur.execute(
             "Select d_next_o_id, d_tax from district where d_w_id = %s and d_id = %s", [warehouse_id, district_id])
-        logging.debug("make payment(): status message: %s",
+        logging.debug("get_district(): status message: %s",
                       cur.statusmessage)
         rows = cur.fetchall()
         conn.commit()
@@ -87,20 +112,23 @@ def id_all_local(warehouse_id, data):
 
 
 def insert_order(conn, warehouse_id, district_id, order_id, customer_id, m_count, order_all_local):
+    time = datetime.datetime.now()
     with conn.cursor() as cur:
         cur.execute(
-            "Insert into orders (o_w_id, o_d_id, o_id, o_c_id, o_carrier_id, o_ol_cnt, o_all_local, o_entry_d) values (%s, %s, %s, %s, NULL, %s, %s, %s)", [warehouse_id, district_id, order_id, customer_id, m_count, order_all_local, datetime.datetime.now()])
-        logging.debug("make payment(): status message: %s",
+            "Insert into orders (o_w_id, o_d_id, o_id, o_c_id, o_carrier_id, o_ol_cnt, o_all_local, o_entry_d) values (%s, %s, %s, %s, NULL, %s, %s, %s)", [warehouse_id, district_id, order_id, customer_id, m_count, order_all_local, time])
+        logging.debug("insert_order(): status message: %s",
                       cur.statusmessage)
 
         conn.commit()
+
+        return time
 
 
 def update_d_new_id(conn, warehouse_id, district_id, new_o_id):
     with conn.cursor() as cur:
         cur.execute(
             "UPDATE district SET d_next_o_id = %s where d_w_id = %s and d_id = %s", [new_o_id, warehouse_id, district_id])
-        logging.debug("make payment(): status message: %s",
+        logging.debug("update_d_new_id(): status message: %s",
                       cur.statusmessage)
 
         conn.commit()
@@ -110,7 +138,7 @@ def get_customer(conn, warehouse_id, district_id, customer_id):
     with conn.cursor() as cur:
         cur.execute(
             "Select c_last, c_credit, c_discount from customer where c_w_id = %s and c_d_id = %s and c_id = %s", [warehouse_id, district_id, customer_id])
-        logging.debug("make payment(): status message: %s",
+        logging.debug("get_customer(): status message: %s",
                       cur.statusmessage)
         rows = cur.fetchall()
         conn.commit()
@@ -125,7 +153,7 @@ def get_warehouse(conn, warehouse_id):
     with conn.cursor() as cur:
         cur.execute(
             "Select w_tax from warehouse where w_id = %s", [warehouse_id])
-        logging.debug("make payment(): status message: %s",
+        logging.debug("get_warehouse(): status message: %s",
                       cur.statusmessage)
         rows = cur.fetchall()
         conn.commit()
@@ -175,13 +203,19 @@ def insert_orderLine(conn, warehouse_id, district_id, curr_order_id, orderLines)
 
         totalAmount += item_amount
 
-        print("Item Number: {}".format(item_id))
-        print("Item Name: {}".format(item_name))
-        print("Supplier Warehouse: {}".format(ol_supply_w_id))
-        print("Quantity: {}".format(ol_quantity))
-        print("OL Amount: {}".format(item_amount))
-        print("Stock Quantity: {}".format(s_quantity))
-        print()
+        if debug:
+            print("Item Number: {}".format(item_id))
+            print("Item Name: {}".format(item_name))
+            print("Supplier Warehouse: {}".format(ol_supply_w_id))
+            print("Quantity: {}".format(ol_quantity))
+            print("OL Amount: {}".format(item_amount))
+            print("Stock Quantity: {}".format(s_quantity))
+            print()
+
+        logging.info(
+            "I_Num, I_Name, Sup_W, Quantity, OL_Amt, S_Quantity")
+        logging.info("{}, {}, {}, {}, {}, {}".format(
+            item_id, item_name, ol_supply_w_id, ol_quantity, item_amount, s_quantity))
 
     return totalAmount
 
@@ -190,7 +224,7 @@ def get_stock(conn, ol_sup_w_id, i_id):
     with conn.cursor() as cur:
         cur.execute(
             "Select s_quantity from stock where s_w_id = %s and s_i_id = %s", [ol_sup_w_id, i_id])
-        logging.debug("make payment(): status message: %s",
+        logging.debug("get_stock(): status message: %s",
                       cur.statusmessage)
         rows = cur.fetchall()
         conn.commit()
@@ -204,7 +238,7 @@ def update_stock(conn, ol_supply_w_id, i_id, ol_quantity, s_quantity, is_remote,
     with conn.cursor() as cur:
         cur.execute(
             "UPDATE stock SET s_quantity = %s, s_ytd = s_ytd + %s, s_order_cnt = s_order_cnt + %s, s_remote_cnt = s_remote_cnt + %s where s_w_id = %s and s_i_id = %s and s_quantity = %s", [s_quantity, ol_quantity, 1, s_remote_cnt, ol_supply_w_id, i_id, old_s_quantity])
-        logging.debug("make payment(): status message: %s",
+        logging.debug("update_stock(): status message: %s",
                       cur.statusmessage)
 
         conn.commit()
@@ -214,7 +248,7 @@ def get_item(conn, i_id):
     with conn.cursor() as cur:
         cur.execute(
             "Select i_name, i_price from item where i_id = %s", [i_id])
-        logging.debug("make payment(): status message: %s",
+        logging.debug("get_item(): status message: %s",
                       cur.statusmessage)
         rows = cur.fetchall()
         conn.commit()
@@ -226,7 +260,7 @@ def insert_new_orderline(conn, warehouse_id, district_id, curr_order_id, ol_num,
     with conn.cursor() as cur:
         cur.execute(
             "Insert into orderline (ol_o_id, ol_d_id, ol_w_id, ol_number, ol_i_id, ol_supply_w_id, ol_quantity, ol_amount, ol_delivery_d, ol_dist_info) values (%s, %s, %s, %s, %s, %s, %s, %s, NULL, %s)", [curr_order_id, district_id, warehouse_id, ol_num, item_id, ol_supply_w_id, ol_quantity, item_amount, ol_dist_info])
-        logging.debug("make payment(): status message: %s",
+        logging.debug("insert_new_orderline(): status message: %s",
                       cur.statusmessage)
 
         # print("{} {} {} {} {} {} {} {} {}".format(curr_order_id, district_id, warehouse_id,

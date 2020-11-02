@@ -6,6 +6,8 @@ import datetime
 
 # R,C W ID,C D ID,C ID.
 
+debug = False
+
 
 def get_related_customer(conn, data):
     # data
@@ -14,8 +16,13 @@ def get_related_customer(conn, data):
     c_id = data[2]
 
     print("-----Related Customer-----")
-    print("Customer Indentifier: {} {} {}".format(c_w_id, c_d_id, c_id))
-    print()
+    logging.info("-----Related Customer-----")
+    if debug:
+        print("Customer Indentifier: {} {} {}".format(c_w_id, c_d_id, c_id))
+        print()
+
+    logging.info("[C_ID]")
+    logging.info("{} {} {}".format(c_w_id, c_d_id, c_id))
 
     relatedCust = set()
     orders = get_orders(conn, c_w_id, c_d_id, c_id)
@@ -28,15 +35,22 @@ def get_related_customer(conn, data):
 
         add_related_cust(conn, c_w_id, items, relatedCust)
 
-        print("*****Customer*****")
+        if debug:
+            print("*****Customer*****")
+        logging.info("*****Customer*****")
         if(len(relatedCust) > 0):
             for cust in relatedCust:
-                print("Customer Identifier: {}, {}, {}".format(
-                    cust[0], cust[1], cust[2]))
-                print()
+                if debug:
+                    print("Customer Identifier: {}, {}, {}".format(
+                        cust[0], cust[1], cust[2]))
+                    print()
+                logging.info("[C_ID]")
+                logging.info("{} {} {}".format(cust[0], cust[1], cust[2]))
         else:
-            print("NIL")
-            print()
+            if debug:
+                print("NIL")
+                print()
+            logging.info("NIL")
 
 
 def get_orders(conn, warehouse_id, district_id, customer_id):

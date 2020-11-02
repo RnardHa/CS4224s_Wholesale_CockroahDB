@@ -6,9 +6,12 @@ import datetime
 
 TOP_N = 10
 
+debug = False
+
 
 def get_top_balance(conn):
     print("-----Top Balance-----")
+    logging.info("-----Top Balance-----")
 
     customers = get_top_customer(conn, TOP_N)
     for cust in customers:
@@ -17,11 +20,15 @@ def get_top_balance(conn):
         warehouseInfo = get_warehouse(conn, w_id)
         districtInfo = get_district(conn, w_id, d_id)
 
-        print("Customer Name: {} {} {}".format(cust[2], cust[3], cust[4]))
-        print("Balance: {}".format(cust[5]))
-        print("Warehouse Name: {}".format(warehouseInfo))
-        print("District Name: {}".format(districtInfo))
-        print()
+        if debug:
+            print("Customer Name: {} {} {}".format(cust[2], cust[3], cust[4]))
+            print("Balance: {}".format(cust[5]))
+            print("Warehouse Name: {}".format(warehouseInfo))
+            print("District Name: {}".format(districtInfo))
+            print()
+        logging.info("[C_Name, Balance, W_Name, D_Name]")
+        logging.info("{} {} {}, {}, {}, {}".format(
+            cust[2], cust[3], cust[4], cust[5], warehouseInfo, districtInfo))
 
 
 def get_top_customer(conn, n):

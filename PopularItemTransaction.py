@@ -5,6 +5,8 @@ import logging
 
 # I,W ID,D ID,L.
 
+debug = False
+
 
 def get_popular_item(conn, data):
     # data
@@ -13,10 +15,15 @@ def get_popular_item(conn, data):
     l = data[2]
 
     print("-----Popular Items-----")
+    logging.info("-----Popular Items-----")
     # print("data {} {} {}".format(w_id, d_id, l))
-    print("District Indentifier: {}, {}".format(w_id, d_id))
-    print("Number of orders to be examined: {}".format(l))
-    print()
+    if debug:
+        print("District Indentifier: {}, {}".format(w_id, d_id))
+        print("Number of orders to be examined: {}".format(l))
+        print()
+
+    logging.info("[D_ID, Num_Order]")
+    logging.info("{} {}, {}".format(w_id, d_id, l))
 
     d_next_o_id = get_district(conn, w_id, d_id)
     # print(get_d_next_o_id)
@@ -32,11 +39,18 @@ def get_popular_item(conn, data):
         c_id = order[1]
         o_entry_d = order[2]
         customer = get_customer(conn, w_id, d_id, c_id)
-        print("*****Orders Info*****")
-        print("Order ID: {}".format(o_id))
-        print("Order Entry Date: {}".format(o_entry_d))
-        print("Name: {} {} {}".format(customer[0], customer[1], customer[2]))
-        print()
+        if debug:
+            print("*****Orders Info*****")
+            print("Order ID: {}".format(o_id))
+            print("Order Entry Date: {}".format(o_entry_d))
+            print("Name: {} {} {}".format(
+                customer[0], customer[1], customer[2]))
+            print()
+
+        logging.info("*****Orders Info*****")
+        logging.info("[O_ID, O_Entry_D, Name]")
+        logging.info("{}, {}, {} {} {}".format(
+            o_id, o_entry_d, customer[0], customer[1], customer[2]))
 
         orderLines = get_max_orderlines(conn, w_id, d_id, o_id)
         for orderLine in orderLines:
@@ -45,19 +59,28 @@ def get_popular_item(conn, data):
             i_name = item[0]
             itemCount = items.get(i_name) if i_name in items else 0
             items.update({i_name: itemCount + 1})
-            print("Item Name: {}".format(i_name))
-            print("Quantity: {}".format(orderLine[1]))
-            print()
+            if debug:
+                print("Item Name: {}".format(i_name))
+                print("Quantity: {}".format(orderLine[1]))
+                print()
+
+            logging.info("[I_Name, Quantity]")
+            logging.info("{}, {}".format(i_name, orderLine[1]))
 
     setItems = set(items.keys())
-    print("*****Percentage of Orders*****")
+    if debug:
+        print("*****Percentage of Orders*****")
+    logging.info("*****Percentage of Orders*****")
     for item in setItems:
         counter = items.get(item)
         percent = float(counter) / (float(l) * 100.0)
 
-        print("Item Name: {}".format(item))
-        print("Percentage of Orders : {}".format(percent))
-        print()
+        if debug:
+            print("Item Name: {}".format(item))
+            print("Percentage of Orders : {}".format(percent))
+            print()
+        logging.info("[I_Name, Percentage of Order]")
+        logging.info("{}, {}".format(item, percent))
 
 
 def get_district(conn, warehouse_id, district_id):

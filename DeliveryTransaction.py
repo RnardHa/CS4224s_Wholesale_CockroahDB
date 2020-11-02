@@ -11,9 +11,8 @@ def make_delivery(conn, data):
     w_id = data[0]
     carrier_id = data[1]
     # print(w_id + " " + carrier_id)
-
+    logging.info("-----Delivery-----")
     print("-----Delivery-----")
-    print()
 
     for d_id in range(1, 11):
         order = get_order(conn, w_id, d_id)
