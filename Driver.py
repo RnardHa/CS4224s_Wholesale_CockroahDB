@@ -281,13 +281,14 @@ def main():
             # end = time.time()
             transactionTimeCol.append(end-start)
 
+        output_transactions_stats(transactionTimeCol, exp_num, fileNum)
         # Load next file
         fileNum = fileNum + 1
 
     # Close communication with the database.
     conn.close()
     # print("Minutes taken: {:.2f}".format(end-start))
-    output_transactions_stats(transactionTimeCol, exp_num, numClient)
+    # output_transactions_stats(transactionTimeCol, exp_num, numClient)
 
 
 def output_transactions_stats(transactionTime, exp_num, clientNum):
