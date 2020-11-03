@@ -8,15 +8,11 @@ import logging
 debug = False
 
 
-def get_popular_item(conn, data):
-    # data
-    w_id = data[0]
-    d_id = data[1]
-    l = data[2]
+def get_popular_item(conn, w_id, d_id, l):
 
     print("-----Popular Items-----")
     logging.info("-----Popular Items-----")
-    # print("data {} {} {}".format(w_id, d_id, l))
+
     if debug:
         print("District Indentifier: {}, {}".format(w_id, d_id))
         print("Number of orders to be examined: {}".format(l))
@@ -26,14 +22,18 @@ def get_popular_item(conn, data):
     logging.info("{} {}, {}".format(w_id, d_id, l))
 
     d_next_o_id = get_district(conn, w_id, d_id)
-    # print(get_d_next_o_id)
 
     # get o_id of l orders
     get_o_id = int(d_next_o_id) - 1 - int(l)
 
+    O_ID_List = []
+    for i in range(get_o_id+1, d_next_o_id):
+        O_ID_List.append(i)
+
+    orders = get_orders(conn, w_id, d_id, O_ID_List)
+
     # list of orders
     items = {}
-    orders = get_orders(conn, w_id, d_id, get_o_id, d_next_o_id)
     for order in orders:
         o_id = order[0]
         c_id = order[1]
@@ -53,6 +53,7 @@ def get_popular_item(conn, data):
             o_id, o_entry_d, customer[0], customer[1], customer[2]))
 
         orderLines = get_max_orderlines(conn, w_id, d_id, o_id)
+
         for orderLine in orderLines:
             i_id = orderLine[0]
             item = get_item(conn, i_id)
@@ -98,10 +99,11 @@ def get_district(conn, warehouse_id, district_id):
         return next_id
 
 
-def get_orders(conn, warehouse_id, district_id, order_id, district_next_o_id):
+def get_orders(conn, warehouse_id, district_id, order_id_list):
+    o_list = tuple(order_id_list)
     with conn.cursor() as cur:
         cur.execute(
-            "Select o_id, o_c_id, o_entry_d from orders where o_w_id = %s and o_d_id = %s and o_id > %s and o_id < %s", [warehouse_id, district_id, order_id, district_next_o_id])
+            "Select o_id, o_c_id, o_entry_d from orders where o_w_id = %s and o_d_id = %s and o_id in %s", [warehouse_id, district_id, o_list])
         logging.debug("make payment(): status message: %s",
                       cur.statusmessage)
         rows = cur.fetchall()
@@ -130,7 +132,7 @@ def get_max_orderlines(conn, warehouse_id, district_id, order_id):
 
     with conn.cursor() as cur:
         cur.execute(
-            "Select ol_i_id, ol_quantity from orderline where ol_w_id = %s and ol_d_id = %s and ol_o_id = %s and ol_quantity <= %s", [warehouse_id, district_id, order_id, ol_quantity])
+            "Select ol_i_id, ol_quantity from orderline where ol_w_id = %s and ol_d_id = %s and ol_o_id = %s and ol_quantity = %s", [warehouse_id, district_id, order_id, ol_quantity])
         logging.debug("make payment(): status message: %s",
                       cur.statusmessage)
         rows = cur.fetchall()

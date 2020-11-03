@@ -13,22 +13,32 @@ def get_top_balance(conn):
     print("-----Top Balance-----")
     logging.info("-----Top Balance-----")
 
+    get_warehouse_names = get_warehouse(conn)
+    warehouse = {}
+    for name in get_warehouse_names:
+        warehouse[name[0]] = name[1]
+
+    district = {}
+    get_district_name = get_district(conn)
+    for d in get_district_name:
+        key = str(d[0]) + ',' + str(d[1])
+        district[key] = d[2]
+
     customers = get_top_customer(conn, TOP_N)
     for cust in customers:
         w_id = cust[0]
         d_id = cust[1]
-        warehouseInfo = get_warehouse(conn, w_id)
-        districtInfo = get_district(conn, w_id, d_id)
+        district_key = str(w_id) + ',' + str(d_id)
 
         if debug:
             print("Customer Name: {} {} {}".format(cust[2], cust[3], cust[4]))
             print("Balance: {}".format(cust[5]))
-            print("Warehouse Name: {}".format(warehouseInfo))
-            print("District Name: {}".format(districtInfo))
+            print("Warehouse Name: {}".format(warehouse.get(w_id)))
+            print("District Name: {}".format(district.get(district_key)))
             print()
         logging.info("[C_Name, Balance, W_Name, D_Name]")
         logging.info("{} {} {}, {}, {}, {}".format(
-            cust[2], cust[3], cust[4], cust[5], warehouseInfo, districtInfo))
+            cust[2], cust[3], cust[4], cust[5], warehouse.get(w_id), district.get(district_key)))
 
 
 def get_top_customer(conn, n):
@@ -43,30 +53,25 @@ def get_top_customer(conn, n):
         return rows
 
 
-def get_warehouse(conn, warehouse_id):
+def get_warehouse(conn):
     with conn.cursor() as cur:
         cur.execute(
-            "Select w_name from warehouse where w_id = %s", [warehouse_id])
-        logging.debug("make payment(): status message: %s",
-                      cur.statusmessage)
-        rows = cur.fetchall()
-        conn.commit()
-        for row in rows:
-            w_name = row[0]
-
-        return w_name
-
-
-def get_district(conn, warehouse_id, district_id):
-    with conn.cursor() as cur:
-        cur.execute(
-            "Select d_name from district where d_w_id = %s and d_id = %s", [warehouse_id, district_id])
+            "Select w_id, w_name from warehouse")
         logging.debug("make payment(): status message: %s",
                       cur.statusmessage)
         rows = cur.fetchall()
         conn.commit()
 
-        for row in rows:
-            d_name = row[0]
+        return rows
 
-        return d_name
+
+def get_district(conn):
+    with conn.cursor() as cur:
+        cur.execute(
+            "Select d_w_id, d_id, d_name from district")
+        logging.debug("make payment(): status message: %s",
+                      cur.statusmessage)
+        rows = cur.fetchall()
+        conn.commit()
+
+        return rows

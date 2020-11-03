@@ -8,12 +8,7 @@ import logging
 debug = False
 
 
-def get_stock_level(conn, data):
-    # data
-    w_id = data[0]
-    d_id = data[1]
-    t = data[2]
-    l = data[3]
+def get_stock_level(conn, w_id, d_id, t, l):
 
     # print("Data {}, {}, {}, {}".format(w_id, d_id, t, l))
     print("-----Stock Level-----")
@@ -29,16 +24,16 @@ def get_stock_level(conn, data):
 
     itemsSet = set()
     for item in orderLines:
-        itemsSet.add(item)
+        itemsSet.add(item[0])
 
     count = get_stock_count(conn, w_id, itemsSet, t)
     if debug:
         print("W_ID: {}".format(w_id))
-        print("Number of items with S_Quantity < {}: {}".format(t, count))
+        print("Number of items with S_Quantity < {}: {}".format(t, count[0]))
         print()
 
     logging.info("[W_ID, Num_I with S_Quantity < {}]".format(t))
-    logging.info("{}, {}".format(w_id, count))
+    logging.info("{}, {}".format(w_id, count[0]))
 
 
 def get_district(conn, warehouse_id, district_id):
@@ -68,17 +63,17 @@ def get_order_lines(conn, warehouse_id, district_id, order_id, district_next_o_i
         return rows
 
 
-def get_stock_count(conn, warehouse_id, items, treshold):
+def get_stock_count(conn, warehouse_id, itemList, treshold):
+    item = tuple(itemList)
     with conn.cursor() as cur:
-        counter = 0
-        for i in items:
-            cur.execute(
-                "Select s_i_id from stock where s_w_id = %s and s_i_id = %s and s_quantity < %s", [warehouse_id, i[0], treshold])
-            logging.debug("make payment(): status message: %s",
-                          cur.statusmessage)
-            rows = cur.fetchall()
-            for row in rows:
-                counter += 1
-            conn.commit()
+        cur.execute(
+            "Select count(s_i_id) from stock where s_w_id = %s and s_i_id in %s and s_quantity < %s", [warehouse_id, item, treshold])
+        logging.debug("make payment(): status message: %s",
+                      cur.statusmessage)
+        rows = cur.fetchall()
+        conn.commit()
 
-        return counter
+        for row in rows:
+            res = row
+
+        return res

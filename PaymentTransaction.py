@@ -11,7 +11,7 @@ from decimal import Decimal
 debug = False
 
 
-def make_payment(conn, data):
+def make_payment(conn, c_w_id, c_d_id, c_id, payment):
     # update warehouse C_W_ID --> increment W_YTD + PAYMENT
     # Update district C_W_ID & C_D_ID --> increment D_YTD + PAYMENT
     # Update customer c_w_id, c_d_id, c_id
@@ -29,11 +29,6 @@ def make_payment(conn, data):
     with conn.cursor() as cur:
         logging.info("-----Payment-----")
         print("-----Payment-----")
-        # data
-        c_w_id = data[0]
-        c_d_id = data[1]
-        c_id = data[2]
-        payment = data[3]
 
         # update warehouse
         cur.execute(

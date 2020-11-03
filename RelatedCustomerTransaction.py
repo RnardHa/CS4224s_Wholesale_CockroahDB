@@ -9,11 +9,11 @@ import datetime
 debug = False
 
 
-def get_related_customer(conn, data):
+def get_related_customer(conn, c_w_id, c_d_id, c_id):
     # data
-    c_w_id = data[0]
-    c_d_id = data[1]
-    c_id = data[2]
+    # c_w_id = C_W_ID
+    # c_d_id = C_D_ID
+    # c_id = C_ID
 
     print("-----Related Customer-----")
     logging.info("-----Related Customer-----")

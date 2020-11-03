@@ -7,15 +7,18 @@ import datetime
 # D,W ID,CARRIER ID.
 
 
-def make_delivery(conn, data):
-    w_id = data[0]
-    carrier_id = data[1]
+def make_delivery(conn, w_id, carrier_id):
+    # w_id = W_ID
+    # carrier_id = CARRIER_ID
     # print(w_id + " " + carrier_id)
     logging.info("-----Delivery-----")
     print("-----Delivery-----")
 
     for d_id in range(1, 11):
         order = get_order(conn, w_id, d_id)
+        print(order)
+        if order is NULL:
+            break
         o_id = order[0]
         c_id = order[1]
         # print(order)
@@ -27,6 +30,7 @@ def make_delivery(conn, data):
 
 
 def get_order(conn, warehouse_id, district_id):
+    res = ""
     with conn.cursor() as cur:
         # print("Warehouse {}, District {}".format(warehouse_id, district_id))
         cur.execute(
@@ -35,11 +39,10 @@ def get_order(conn, warehouse_id, district_id):
                       cur.statusmessage)
         rows = cur.fetchall()
         conn.commit()
-
         for row in rows:
-            result = row
+            res = row
 
-        return result
+        return res
 
 
 def update_carrier(conn, warehouse_id, district_id, order_id, order_carrier_id):
