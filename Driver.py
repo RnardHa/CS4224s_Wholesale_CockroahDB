@@ -22,7 +22,7 @@ import PopularItemTransaction
 import TopBalanceTransaction
 import RelatedCustomerTransaction
 
-debug = False
+debug = True
 
 
 def run_transaction(conn, op, max_retries=3):
@@ -155,20 +155,16 @@ def main():
 
                 end = time.time()
             elif(xactType == 'D'):
-                # for i in range(1, 3):
-                #     xList.append(split[i])
-
                 W_ID = int(split[1])
                 CARRIER_ID = int(split[2])
 
-                # try:
-                #     run_transaction(
-                #         conn, lambda conn: DeliveryTransaction.make_delivery(conn, W_ID, CARRIER_ID))
-                # except ValueError as ve:
-                #     logging.debug("run_transaction(conn, op) failed: %s", ve)
-                #     pass
+                try:
+                    run_transaction(
+                        conn, lambda conn: DeliveryTransaction.make_delivery(conn, W_ID, CARRIER_ID))
+                except ValueError as ve:
+                    logging.debug("run_transaction(conn, op) failed: %s", ve)
+                    pass
 
-                # xList.clear()
                 end = time.time()
             elif(xactType == 'O'):
                 C_W_ID = int(split[1])
@@ -211,6 +207,7 @@ def main():
 
                 end = time.time()
             elif(xactType == 'T'):
+                # print("T")
                 try:
                     run_transaction(
                         conn, lambda conn: TopBalanceTransaction.get_top_balance(conn))
@@ -233,7 +230,6 @@ def main():
 
                 end = time.time()
 
-            # end = time.time()
             transactionTimeCol.append(end-start)
 
         output_transactions_stats(transactionTimeCol, exp_num, fileNum)
