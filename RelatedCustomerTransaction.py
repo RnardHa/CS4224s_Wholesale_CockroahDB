@@ -15,7 +15,7 @@ def get_related_customer(conn, c_w_id, c_d_id, c_id):
     # c_d_id = C_D_ID
     # c_id = C_ID
 
-    print("-----Related Customer-----")
+    # print("-----Related Customer-----")
     logging.info("-----Related Customer-----")
     if debug:
         print("Customer Indentifier: {} {} {}".format(c_w_id, c_d_id, c_id))
@@ -51,6 +51,8 @@ def get_related_customer(conn, c_w_id, c_d_id, c_id):
                 print("NIL")
                 print()
             logging.info("NIL")
+
+        return time.thread_time()
 
 
 def get_orders(conn, warehouse_id, district_id, customer_id):

@@ -10,7 +10,7 @@ debug = False
 
 
 def get_top_balance(conn):
-    print("-----Top Balance-----")
+    # print("-----Top Balance-----")
     logging.info("-----Top Balance-----")
 
     get_warehouse_names = get_warehouse(conn)
@@ -39,6 +39,8 @@ def get_top_balance(conn):
         logging.info("[C_Name, Balance, W_Name, D_Name]")
         logging.info("{} {} {}, {}, {}, {}".format(
             cust[2], cust[3], cust[4], cust[5], warehouse.get(w_id), district.get(district_key)))
+
+    return time.thread_time()
 
 
 def get_top_customer(conn, n):

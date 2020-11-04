@@ -10,7 +10,7 @@ debug = False
 
 def get_popular_item(conn, w_id, d_id, l):
 
-    print("-----Popular Items-----")
+    # print("-----Popular Items-----")
     logging.info("-----Popular Items-----")
 
     if debug:
@@ -83,6 +83,8 @@ def get_popular_item(conn, w_id, d_id, l):
         logging.info("[I_Name, Percentage of Order]")
         logging.info("{}, {}".format(item, percent))
 
+    return time.thread_time()
+
 
 def get_district(conn, warehouse_id, district_id):
     with conn.cursor() as cur:
@@ -128,17 +130,21 @@ def get_customer(conn, warehouse_id, district_id, customer_id):
 
 
 def get_max_orderlines(conn, warehouse_id, district_id, order_id):
+    ol_quantity = None
     ol_quantity = get_max_quantity(conn, warehouse_id, district_id, order_id)
 
-    with conn.cursor() as cur:
-        cur.execute(
-            "Select ol_i_id, ol_quantity from orderline where ol_w_id = %s and ol_d_id = %s and ol_o_id = %s and ol_quantity = %s", [warehouse_id, district_id, order_id, ol_quantity])
-        logging.debug("make payment(): status message: %s",
-                      cur.statusmessage)
-        rows = cur.fetchall()
-        conn.commit()
+    rows = None
 
-        return rows
+    if ol_quantity is not None:
+        with conn.cursor() as cur:
+            cur.execute(
+                "Select ol_i_id, ol_quantity from orderline where ol_w_id = %s and ol_d_id = %s and ol_o_id = %s and ol_quantity = %s", [warehouse_id, district_id, order_id, ol_quantity])
+            logging.debug("make payment(): status message: %s",
+                          cur.statusmessage)
+            rows = cur.fetchall()
+            conn.commit()
+
+    return rows
 
 
 def get_max_quantity(conn, warehouse_id, district_id, order_id):

@@ -9,10 +9,12 @@ from decimal import Decimal
 # N,C ID,W ID,D ID,M.
 
 # OL I ID,OL SUPPLY W ID,OL QUANTITY.
+# conn, N_W_ID, N_D_ID, N_C_ID, M, itemNumber, supplierWarehouse, quantity
 
 debug = False
 
 
+# def make_new_order(conn, w_id, d_id, c_id, m, data):
 def make_new_order(conn, c_data, data):
     # for n in data:
     #     print(n)
@@ -20,7 +22,7 @@ def make_new_order(conn, c_data, data):
     # get N --> next available order number D_NEXT_O_ID for district(w_id, d_id)
     # increment N by 1
     # create new order
-    print("-----New Order-----")
+    # print("-----New Order-----")
     logging.info("-----New Order-----")
     with conn.cursor() as cur:
         # data
@@ -81,6 +83,8 @@ def make_new_order(conn, c_data, data):
         logging.info("{} \t{}".format(curr_o_id, o_entry_d))
         logging.info("Num Items \tTotal Amount")
         logging.info("{} \t\t{:.2f}".format(m, totalAmount))
+
+        return time.thread_time()
 
 
 def get_district(conn, warehouse_id, district_id):
@@ -169,28 +173,71 @@ def insert_orderLine(conn, warehouse_id, district_id, curr_order_id, orderLines)
     ol_dist_info = "S_DIST_{:02d}".format(int(district_id))
     ol_num = 1
     ol_insert_list = []
+    item_set = set()
+    ol_sup = set()
+    for each in orderLines:
+        orderLine = each.strip()
+        split = orderLine.split(',')
+
+        item_set.add(int(split[0]))
+        ol_sup.add(int(split[1]))
+
+    stock = get_stock(conn, ol_sup, item_set)
+    stock_dic = {}
+    # s_i_id, s_quantity, s_ytd, s_order_cnt, s_remote_cnt
+    for s in stock:
+        key = s[0]
+        val = (s[1], s[2], s[3], s[4])
+        stock_dic[key] = val
+
+    item = get_item(conn, item_set)
+    item_dic = {}
+    for i in item:
+        key = i[0]
+        val = (i[1], i[2])
+        item_dic[key] = val
+
+    update_stock_list = []
+    stock_list = {}
     for o in orderLines:
         orderLine = o.strip()
         split = orderLine.split(',')
 
-        item_id = split[0]
+        item_id = int(split[0])
         ol_supply_w_id = split[1]
         ol_quantity = split[2]
 
-        # update stock
-        # print("w: {}, sup {}".format(warehouse_id, ol_supply_w_id))
-        is_remote = warehouse_id is not ol_supply_w_id
-        stock = get_stock(conn, ol_supply_w_id, item_id)
-        old_s_quantity = stock[0]
-        s_quantity = old_s_quantity - Decimal(ol_quantity)
+        if warehouse_id is not ol_supply_w_id:
+            is_remote = 0
+        else:
+            is_remote = 1
+
+        stock_info = stock_dic.get(item_id)
+        quantity = stock_info[0]
+        s_ytd = stock_info[1]
+        s_order_cnt = stock_info[2]
+        s_remote_cnt = stock_info[3]
+
+        s_quantity = quantity - Decimal(ol_quantity)
 
         if(s_quantity < 10):
             s_quantity += 100
 
-        update_stock(conn, ol_supply_w_id, item_id, ol_quantity,
-                     s_quantity, is_remote, old_s_quantity)
+        if item_id not in stock_list:
+            up_stock = (ol_supply_w_id, item_id, s_quantity, s_ytd +
+                        Decimal(ol_quantity), s_order_cnt + 1, s_remote_cnt + is_remote)
+            stock_list[item_id] = up_stock
+        else:
+            info = stock_list.get(item_id)
+            quan = info[2]
+            up_s_ytd = info[3]
+            up_o_cnt = info[4]
+            up_rem_cnt = info[5]
+            up_stock = (ol_supply_w_id, item_id, Decimal(quan) - Decimal(ol_quantity),
+                        Decimal(up_s_ytd) + Decimal(ol_quantity), up_o_cnt + 1, up_rem_cnt + is_remote)
+            stock_list[item_id] = up_stock
 
-        item = get_item(conn, item_id)
+        item = item_dic[item_id]
         item_name = item[0]
         item_price = item[1]
         item_amount = Decimal(ol_quantity) * item_price
@@ -220,29 +267,34 @@ def insert_orderLine(conn, warehouse_id, district_id, curr_order_id, orderLines)
         logging.info("{}, {}, {}, {}, {}, {}".format(
             item_id, item_name, ol_supply_w_id, ol_quantity, item_amount, s_quantity))
     # bulk insert here
-    # print(ol_insert_list)
+    for i in stock_list:
+        update_stock_list.append(stock_list.get(i))
+
+    update_stock(conn, update_stock_list)
     insert_new_orderline(conn, ol_insert_list)
     return totalAmount
 
 
 def get_stock(conn, ol_sup_w_id, i_id):
+    ol_set = tuple(ol_sup_w_id)
+    i_id_set = tuple(i_id)
     with conn.cursor() as cur:
         cur.execute(
-            "Select s_quantity from stock where s_w_id = %s and s_i_id = %s", [ol_sup_w_id, i_id])
+            "Select s_i_id, s_quantity, s_ytd, s_order_cnt, s_remote_cnt from stock where s_w_id in %s and s_i_id in %s", [ol_set, i_id_set])
         logging.debug("get_stock(): status message: %s",
                       cur.statusmessage)
         rows = cur.fetchall()
         conn.commit()
 
-        return rows[0]
+        return rows
 
 
-def update_stock(conn, ol_supply_w_id, i_id, ol_quantity, s_quantity, is_remote, old_s_quantity):
-    s_remote_cnt = 1 if is_remote else 0
-    # print(s_remote_cnt)
+def update_stock(conn, update_list):
     with conn.cursor() as cur:
+        val_str = b','.join(cur.mogrify(
+            "(%s,%s,%s,%s,%s,%s)", x) for x in update_list)
         cur.execute(
-            "UPDATE stock SET s_quantity = %s, s_ytd = s_ytd + %s, s_order_cnt = s_order_cnt + %s, s_remote_cnt = s_remote_cnt + %s where s_w_id = %s and s_i_id = %s and s_quantity = %s", [s_quantity, ol_quantity, 1, s_remote_cnt, ol_supply_w_id, i_id, old_s_quantity])
+            "UPSERT into stock (s_w_id, s_i_id, s_quantity, s_ytd, s_order_cnt, s_remote_cnt) VALUES " + str(val_str, 'utf-8'))
         logging.debug("update_stock(): status message: %s",
                       cur.statusmessage)
 
@@ -250,15 +302,16 @@ def update_stock(conn, ol_supply_w_id, i_id, ol_quantity, s_quantity, is_remote,
 
 
 def get_item(conn, i_id):
+    i_id_set = tuple(i_id)
     with conn.cursor() as cur:
         cur.execute(
-            "Select i_name, i_price from item where i_id = %s", [i_id])
+            "Select i_id, i_name, i_price from item where i_id in %s", [i_id_set])
         logging.debug("get_item(): status message: %s",
                       cur.statusmessage)
         rows = cur.fetchall()
         conn.commit()
 
-        return rows[0]
+        return rows
 
 
 def insert_new_orderline(conn, insert_list):

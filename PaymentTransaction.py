@@ -28,7 +28,7 @@ def make_payment(conn, c_w_id, c_d_id, c_id, payment):
     # 4. Payment amount PAYMENT
     with conn.cursor() as cur:
         logging.info("-----Payment-----")
-        print("-----Payment-----")
+        # print("-----Payment-----")
 
         # update warehouse
         cur.execute(
@@ -126,3 +126,5 @@ def make_payment(conn, c_w_id, c_d_id, c_id, payment):
             print()
         logging.info("[Payment Amount]")
         logging.info("{}".format(payment))
+
+    return time.thread_time()

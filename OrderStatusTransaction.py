@@ -16,7 +16,7 @@ def req_order_status(conn, c_w_id, c_d_id, c_id):
     # c_id = C_ID
 
     # print("Data {}, {}, {}".format(c_w_id, c_d_id, c_id))
-    print("-----Order Status-----")
+    # print("-----Order Status-----")
     logging.info("-----Order Status-----")
 
     # customer information
@@ -63,6 +63,8 @@ def req_order_status(conn, c_w_id, c_d_id, c_id):
             "[I_Num, Sup_W, Quantity, Total_Price, Date and Time Delivery]")
         logging.info("{}, {}, {}, {}, {}".format(
             row[0], row[1], row[2], row[3], row[4]))
+
+    return time.thread_time()
 
 
 def get_customer(conn, warehouse_id, district_id, customer_id):
