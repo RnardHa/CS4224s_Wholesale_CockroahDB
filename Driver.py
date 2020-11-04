@@ -82,7 +82,7 @@ def main():
     opt = parse_cmdline()
 
     # EXP num - cleint pair
-    exp = {'5': '1', '6': '20', '7': '40', '8': '40'}
+    exp = {'5': '20', '6': '20', '7': '40', '8': '40'}
     exp_num = opt.exp_num
     numClient = exp[opt.exp_num]
     fileNum = 1
@@ -123,19 +123,12 @@ def main():
                     nLen = int(nLen) - 1
 
                 # run N transaction
-                # try:
-                #     run_transaction(
-                #         conn, lambda conn: NewOrderTransaction.make_new_order(conn, cList, xList))
-
-                #     # The function below is used to test the transaction retry logic.  It
-                #     # can be deleted from production code.
-                #     # run_transaction(conn, test_retry_loop)
-                # except ValueError as ve:
-                #     # Below, we print the error and continue on so this example is easy to
-                #     # run (and run, and run...).  In real code you should handle this error
-                #     # and any others thrown by the database interaction.
-                #     logging.debug("run_transaction(conn, op) failed: %s", ve)
-                #     pass
+                try:
+                    run_transaction(
+                        conn, lambda conn: NewOrderTransaction.make_new_order(conn, cList, xList))
+                except ValueError as ve:
+                    logging.debug("run_transaction(conn, op) failed: %s", ve)
+                    pass
 
                 cList.clear()
                 xList.clear()

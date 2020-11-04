@@ -168,6 +168,7 @@ def insert_orderLine(conn, warehouse_id, district_id, curr_order_id, orderLines)
     totalAmount = 0
     ol_dist_info = "S_DIST_{:02d}".format(int(district_id))
     ol_num = 1
+    ol_insert_list = []
     for o in orderLines:
         orderLine = o.strip()
         split = orderLine.split(',')
@@ -194,8 +195,10 @@ def insert_orderLine(conn, warehouse_id, district_id, curr_order_id, orderLines)
         item_price = item[1]
         item_amount = Decimal(ol_quantity) * item_price
 
-        insert_new_orderline(conn, warehouse_id, district_id, curr_order_id,
-                             ol_num, item_id, item_amount, ol_supply_w_id, ol_quantity, ol_dist_info)
+        ol = (str(curr_order_id), str(district_id), str(warehouse_id), str(ol_num), str(
+            item_id), str(ol_supply_w_id), str(ol_quantity), Decimal(item_amount), str(ol_dist_info))
+
+        ol_insert_list.append(ol)
 
         ol_num += 1
         # print("Q: {}, p: {}, total: {}".format(
@@ -216,7 +219,9 @@ def insert_orderLine(conn, warehouse_id, district_id, curr_order_id, orderLines)
             "I_Num, I_Name, Sup_W, Quantity, OL_Amt, S_Quantity")
         logging.info("{}, {}, {}, {}, {}, {}".format(
             item_id, item_name, ol_supply_w_id, ol_quantity, item_amount, s_quantity))
-
+    # bulk insert here
+    # print(ol_insert_list)
+    insert_new_orderline(conn, ol_insert_list)
     return totalAmount
 
 
@@ -256,10 +261,14 @@ def get_item(conn, i_id):
         return rows[0]
 
 
-def insert_new_orderline(conn, warehouse_id, district_id, curr_order_id, ol_num, item_id, item_amount, ol_supply_w_id, ol_quantity, ol_dist_info):
+def insert_new_orderline(conn, insert_list):
+    # val = tuple(insert_list)
+    # print(val)
     with conn.cursor() as cur:
+        val_str = b','.join(cur.mogrify(
+            "(%s,%s,%s,%s,%s,%s,%s,%s,%s)", x) for x in insert_list)
         cur.execute(
-            "Insert into orderline (ol_o_id, ol_d_id, ol_w_id, ol_number, ol_i_id, ol_supply_w_id, ol_quantity, ol_amount, ol_delivery_d, ol_dist_info) values (%s, %s, %s, %s, %s, %s, %s, %s, NULL, %s)", [curr_order_id, district_id, warehouse_id, ol_num, item_id, ol_supply_w_id, ol_quantity, item_amount, ol_dist_info])
+            "Insert into orderline (ol_o_id, ol_d_id, ol_w_id, ol_number, ol_i_id, ol_supply_w_id, ol_quantity, ol_amount, ol_dist_info) values " + str(val_str, 'utf-8'))
         logging.debug("insert_new_orderline(): status message: %s",
                       cur.statusmessage)
 

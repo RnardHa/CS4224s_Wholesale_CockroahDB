@@ -14,40 +14,30 @@ def make_delivery(conn, w_id, carrier_id):
     logging.info("-----Delivery-----")
     print("-----Delivery-----")
     order_list = get_order(conn, w_id)
+    get_first = order_list[0]  # Get the first item to extract the o_id
+    o_id = get_first[1]
+    update_carrier(conn, w_id, o_id, carrier_id)
+    update_orderLine(conn, w_id, o_id)
     for o in order_list:
         d_id = o[0]
-        o_id = o[1]
         c_id = o[2]
 
-        update_carrier(conn, w_id, d_id, o_id, carrier_id)
-        update_orderLine(conn, w_id, d_id, o_id)
         total_amount = get_sum_of_ol(conn, w_id, d_id, o_id)
-        # print("Amount {}".format(total_amount))
+        # # print("Amount {}".format(total_amount))
         update_customer(conn, w_id, d_id, c_id, total_amount)
-
-    # for d_id in range(1, 11):
-    #     order = get_order(conn, w_id, d_id)
-    #     if order is not "":
-    #         o_id = order[0]
-    #         c_id = order[1]
-    #         # print(order)
-    #         update_carrier(conn, w_id, d_id, o_id, carrier_id)
-    #         update_orderLine(conn, w_id, d_id, o_id)
-    #         total_amount = get_sum_of_ol(conn, w_id, d_id, o_id)
-    #         # print("Amount {}".format(total_amount))
-    #         update_customer(conn, w_id, d_id, c_id, total_amount)
 
 
 def get_order(conn, warehouse_id):
+    o_id = ""
     with conn.cursor() as cur:
         cur.execute(
             "Select o_id from orders where o_w_id = 1 and o_d_id = 1 and o_carrier_id is NULL limit 1")
         rows = cur.fetchall()
         for row in rows:
             o_id = row[0]
-        # print(o_id)
-        cur.execute(
-            "Select o_d_id, o_id, o_c_id from orders where o_id = %s and o_w_id = %s and o_d_id in (1,2,3,4,5,6,7,8,9,10) and o_carrier_id is NULL", [o_id, warehouse_id])
+        if o_id != "":
+            cur.execute(
+                "Select o_d_id, o_id, o_c_id from orders where o_id = %s and o_w_id = %s and o_d_id in (1,2,3,4,5,6,7,8,9,10) and o_carrier_id is NULL", [o_id, warehouse_id])
         logging.debug("make payment(): status message: %s",
                       cur.statusmessage)
         rows = cur.fetchall()
@@ -56,20 +46,20 @@ def get_order(conn, warehouse_id):
         return rows
 
 
-def update_carrier(conn, warehouse_id, district_id, order_id, order_carrier_id):
+def update_carrier(conn, warehouse_id, order_id, order_carrier_id):
     with conn.cursor() as cur:
         cur.execute(
-            "UPDATE orders SET o_carrier_id = %s where o_w_id = %s and o_d_id = %s and o_id = %s", [order_carrier_id, warehouse_id, district_id, order_id])
+            "UPDATE orders SET o_carrier_id = %s where o_w_id = %s and o_d_id in (1,2,3,4,5,6,7,8,9,10) and o_id = %s", [order_carrier_id, warehouse_id, order_id])
         logging.debug("make payment(): status message: %s",
                       cur.statusmessage)
         conn.commit()
 
 
-def update_orderLine(conn, warehouse_id, district_id, order_id):
+def update_orderLine(conn, warehouse_id, order_id):
     date = datetime.datetime.now()
     with conn.cursor() as cur:
         cur.execute(
-            "UPDATE orderline SET ol_delivery_d = %s where ol_w_id = %s and ol_d_id = %s and ol_o_id = %s", [date, warehouse_id, district_id, order_id])
+            "UPDATE orderline SET ol_delivery_d = %s where ol_w_id = %s and ol_d_id in (1,2,3,4,5,6,7,8,9,10) and ol_o_id = %s", [date, warehouse_id, order_id])
         logging.debug("make payment(): status message: %s",
                       cur.statusmessage)
         conn.commit()
