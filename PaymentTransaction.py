@@ -12,24 +12,12 @@ debug = False
 
 
 def make_payment(conn, c_w_id, c_d_id, c_id, payment):
-    # update warehouse C_W_ID --> increment W_YTD + PAYMENT
-    # Update district C_W_ID & C_D_ID --> increment D_YTD + PAYMENT
-    # Update customer c_w_id, c_d_id, c_id
-    #       decrement c_balance - payment
-    #       icrement c_ytd_payment + payment
-    #       increment c_pay4ment_cnt + 1
 
-    # output
-    # 1. Customer’s identifier (C W ID, C D ID, C ID), name (C FIRST, C MIDDLE, C LAST), address
-    # (C STREET 1, C STREET 2, C CITY, C STATE, C ZIP), C PHONE, C SINCE, C CREDIT,
-    # C CREDIT LIM, C DISCOUNT, C BALANCE
-    # 2. Warehouse’s address (W STREET 1, W STREET 2, W CITY, W STATE, W ZIP)
-    # 3. District’s address (D STREET 1, D STREET 2, D CITY, D STATE, D ZIP)
-    # 4. Payment amount PAYMENT
     with conn.cursor() as cur:
         logging.info("-----Payment-----")
         # print("-----Payment-----")
 
+        # might be possibe to return *
         # update warehouse
         cur.execute(
             "UPDATE warehouse SET w_ytd = w_ytd + %s where w_id = %s", [payment, c_w_id])

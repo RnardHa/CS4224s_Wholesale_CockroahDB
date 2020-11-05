@@ -8,9 +8,6 @@ import datetime
 
 
 def make_delivery(conn, w_id, carrier_id):
-    # w_id = W_ID
-    # carrier_id = CARRIER_ID
-    # print(w_id + " " + carrier_id)
     logging.info("-----Delivery-----")
     # print("-----Delivery-----")
     order_list = get_order(conn, w_id)
@@ -31,16 +28,18 @@ def make_delivery(conn, w_id, carrier_id):
 
 
 def get_order(conn, warehouse_id):
-    o_id = get_o_id(conn, warehouse_id)
-    with conn.cursor() as cur:
-        cur.execute(
-            "Select o_d_id, o_id, o_c_id from orders where o_id = %s and o_w_id = %s and o_d_id in (1,2,3,4,5,6,7,8,9,10) and o_carrier_id is NULL", [o_id[0], warehouse_id])
-        logging.debug("make payment(): status message: %s",
-                      cur.statusmessage)
-        rows = cur.fetchall()
-        conn.commit()
+    val = get_o_id(conn, warehouse_id)
+    if (len(val) > 0):
+        o_id = val[0]
+        with conn.cursor() as cur:
+            cur.execute(
+                "Select o_d_id, o_id, o_c_id from orders where o_id = %s and o_w_id = %s and o_d_id in (1,2,3,4,5,6,7,8,9,10) and o_carrier_id is NULL", [o_id[0], warehouse_id])
+            logging.debug("make payment(): status message: %s",
+                          cur.statusmessage)
+            rows = cur.fetchall()
+            conn.commit()
 
-    return rows
+        return rows
 
 
 def get_o_id(conn, warehouse_id):
@@ -50,7 +49,7 @@ def get_o_id(conn, warehouse_id):
         rows = cur.fetchall()
         conn.commit()
 
-    return rows[0]
+    return rows
 
 
 def update_carrier(conn, warehouse_id, order_id, order_carrier_id):

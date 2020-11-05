@@ -82,10 +82,10 @@ def main():
     opt = parse_cmdline()
 
     # EXP num - cleint pair
-    exp = {'5': '20', '6': '20', '7': '40', '8': '40'}
+    exp = {'5': '20', '6': '14', '7': '40', '8': '40'}
     exp_num = opt.exp_num
     numClient = exp[opt.exp_num]
-    fileNum = 1
+    fileNum = 13
     transactionTimeCol = []
     while(fileNum <= int(numClient)):
         # When new file(client) is read, load balancer will select different node to run the queries.
@@ -226,6 +226,7 @@ def main():
             transactionTimeCol.append(end-start)
 
         output_transactions_stats(transactionTimeCol, exp_num, fileNum)
+        transactionTimeCol.clear()
         # Load next file
         fileNum = fileNum + 1
 

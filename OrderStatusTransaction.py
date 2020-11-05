@@ -10,12 +10,6 @@ debug = False
 
 
 def req_order_status(conn, c_w_id, c_d_id, c_id):
-    # data
-    # c_w_id = C_W_ID
-    # c_d_id = C_D_ID
-    # c_id = C_ID
-
-    # print("Data {}, {}, {}".format(c_w_id, c_d_id, c_id))
     # print("-----Order Status-----")
     logging.info("-----Order Status-----")
 
