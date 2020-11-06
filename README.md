@@ -73,6 +73,14 @@ This will generate a file called haproxy.cfg, change the configuration as needed
 ```
 export PATH=/<FILE LOCATION>/haproxy-2.2.0:$PATH
 ```
+### Configure HAProxy
+Change bind value to 25273
+```
+listen.psql
+    bind :25273
+    ...
+    ...
+```
 ### Start HAProxy
 ```
 haproxy -f haproxy.cfg
