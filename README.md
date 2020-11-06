@@ -98,7 +98,7 @@ bash LoadData.sh
 ## 7. Run application
 ### In the folder containing source codes
 ```
-python Driver.py -EN <Experiment Number> -> <5/6/7/8>
+python Driver.py -addr <IP ADDRESS> -EN <Experiment Number> -> <5/6/7/8>
 ```
 Note: Experiment 5 & 7 -> 4 servers active, 6 & 8 -> 5 servers active <br>
       Recommended to run 6 & 8 followed by 5 & 7
