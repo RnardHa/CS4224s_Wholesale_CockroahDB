@@ -100,15 +100,11 @@ In order to simulate only 4 servers are running, we kill one of the nodes, E.g. 
 ```
 cockroach quit --insecure --host=<IP ADDRESS>:25271
 ```
-### Get Throughput.csv file
-```
-python Throughput.py
-```
 ### Get DBState.csv file
 ```
 python DBState.py -EN <Experiment Number>
 ```
-
-
-
-
+### Get Throughput.csv file
+```
+python Throughput.py
+```
