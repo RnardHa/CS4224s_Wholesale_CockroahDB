@@ -106,7 +106,7 @@ python Throughput.py
 ```
 ### Get DBState.csv file
 ```
-python DBState.py
+python DBState.py -EN <Experiment Number>
 ```
 
 
