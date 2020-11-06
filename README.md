@@ -92,7 +92,7 @@ bash LoadData.sh
 ```
 python Driver.py -EN <Experiment Number> -> <5/6/7/8>
 ```
-Note: Experiment 5 & 7 -> 4 servers active, 6 & 8 -> 5 servers active
+Note: Experiment 5 & 7 -> 4 servers active, 6 & 8 -> 5 servers active <br>
       Recommended to run 6 & 8 followed by 5 & 7
       
 ### Run with 4 servers
