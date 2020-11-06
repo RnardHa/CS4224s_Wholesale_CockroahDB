@@ -14,7 +14,6 @@ from decimal import Decimal
 debug = False
 
 
-# def make_new_order(conn, w_id, d_id, c_id, m, data):
 def make_new_order(conn, c_data, data):
     # for n in data:
     #     print(n)

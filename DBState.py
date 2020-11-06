@@ -81,44 +81,68 @@ def main():
             "Select sum(w_ytd) from warehouse")
         warehouse = cur.fetchall()
 
+        # print(warehouse)
+
         cur.execute(
             "Select sum(d_ytd), sum(d_next_o_id) from district")
         district = cur.fetchall()
+
+        # print(district)
 
         cur.execute(
             "Select sum(c_balance), sum(c_ytd_payment), sum(c_payment_cnt), sum(c_delivery_cnt) from customer")
         customer = cur.fetchall()
 
+        # print(customer)
+
         cur.execute(
             "Select max(o_id), sum(o_ol_cnt) from orders")
         orders = cur.fetchall()
+
+        # print(orders)
 
         cur.execute(
             "Select sum(ol_amount), sum(ol_quantity) from orderline")
         orderline = cur.fetchall()
 
+        # print(orderline)
+
         cur.execute(
             "Select sum(s_quantity), sum(s_ytd), sum(s_order_cnt), sum(s_remote_cnt) from stock")
         stock = cur.fetchall()
 
+        # print(stock)
+
         conn.commit()
 
-        print(warehouse)
-        print(district)
-        print(customer)
-        print(orders)
-        print(orderline)
-        print(stock)
-
-    # output_dbstate(exp_num, warehouse[0], district[0], customer[0], orders[0], orderline[0], stock[0])
+    output_dbstate(exp_num, warehouse[0], district[0],
+                   customer[0], orders[0], orderline[0], stock[0])
 
 
 def output_dbstate(exp_num, warehouse, district, customer, orders, orderline, stock):
     with open('DBState.csv', 'a+', newline='') as file:
+        d_ytd = district[0]
+        d_next_o_id = district[1]
+
+        c_balance = customer[0]
+        c_ytd_payment = customer[1]
+        c_payment_cnt = customer[2]
+        c_delivery_cnt = customer[3]
+
+        o_id = orders[0]
+        o_ol_cnt = orders[1]
+
+        ol_amount = orderline[0]
+        ol_quantity = orderline[1]
+
+        s_quantity = stock[0]
+        s_ytd = stock[1]
+        s_order_cnt = stock[2]
+        s_remote_cnt = stock[3]
 
         writer = csv.writer(file)
-        writer.writerow([exp_num, warehouse, num_xacts, totalSec,
-                         throughput, average, median, percentile95, percentile99])
+        writer.writerow([exp_num, warehouse[0], d_ytd, d_next_o_id, c_balance, c_ytd_payment, c_payment_cnt,
+                         c_delivery_cnt, o_id, o_ol_cnt, ol_amount, ol_quantity, s_quantity, s_ytd, s_order_cnt, s_remote_cnt])
 
 
 def parse_cmdline():

@@ -11,7 +11,7 @@ def make_delivery(conn, w_id, carrier_id):
     logging.info("-----Delivery-----")
     # print("-----Delivery-----")
     order_list = get_order(conn, w_id)
-    if order_list is not None or "":
+    if (len(order_list) > 0):
         get_first = order_list[0]  # Get the first item to extract the o_id
         o_id = get_first[1]
         update_carrier(conn, w_id, o_id, carrier_id)
