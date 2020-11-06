@@ -8,6 +8,7 @@ import datetime
 
 
 def make_delivery(conn, w_id, carrier_id):
+    start = time.time()
     logging.info("-----Delivery-----")
     # print("-----Delivery-----")
     order_list = get_order(conn, w_id)
@@ -24,7 +25,8 @@ def make_delivery(conn, w_id, carrier_id):
             # # print("Amount {}".format(total_amount))
             update_customer(conn, w_id, d_id, c_id, total_amount)
 
-    return time.thread_time()
+    end = time.time()
+    return end - start
 
 
 def get_order(conn, warehouse_id):

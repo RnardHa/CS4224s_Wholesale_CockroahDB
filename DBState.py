@@ -120,7 +120,7 @@ def main():
 
 
 def output_dbstate(exp_num, warehouse, district, customer, orders, orderline, stock):
-    with open('DBState.csv', 'a+', newline='') as file:
+    with open('dbstate.csv', 'a+', newline='') as file:
         d_ytd = district[0]
         d_next_o_id = district[1]
 

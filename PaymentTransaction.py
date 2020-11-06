@@ -12,7 +12,7 @@ debug = False
 
 
 def make_payment(conn, c_w_id, c_d_id, c_id, payment):
-
+    start = time.time()
     with conn.cursor() as cur:
         logging.info("-----Payment-----")
         # print("-----Payment-----")
@@ -115,4 +115,5 @@ def make_payment(conn, c_w_id, c_d_id, c_id, payment):
         logging.info("[Payment Amount]")
         logging.info("{}".format(payment))
 
-    return time.thread_time()
+    end = time.time()
+    return end - start

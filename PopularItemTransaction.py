@@ -9,7 +9,7 @@ debug = False
 
 
 def get_popular_item(conn, w_id, d_id, l):
-
+    start = time.time()
     # print("-----Popular Items-----")
     logging.info("-----Popular Items-----")
 
@@ -83,7 +83,8 @@ def get_popular_item(conn, w_id, d_id, l):
         logging.info("[I_Name, Percentage of Order]")
         logging.info("{}, {}".format(item, percent))
 
-    return time.thread_time()
+    end = time.time()
+    return end - start
 
 
 def get_district(conn, warehouse_id, district_id):

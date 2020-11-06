@@ -22,6 +22,7 @@ def make_new_order(conn, c_data, data):
     # increment N by 1
     # create new order
     # print("-----New Order-----")
+    start = time.time()
     logging.info("-----New Order-----")
     with conn.cursor() as cur:
         # data
@@ -83,7 +84,8 @@ def make_new_order(conn, c_data, data):
         logging.info("Num Items \tTotal Amount")
         logging.info("{} \t\t{:.2f}".format(m, totalAmount))
 
-        return time.thread_time()
+        end = time.time()
+        return end - start
 
 
 def get_district(conn, warehouse_id, district_id):

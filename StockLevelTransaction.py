@@ -9,7 +9,7 @@ debug = False
 
 
 def get_stock_level(conn, w_id, d_id, t, l):
-
+    start = time.time()
     # print("Data {}, {}, {}, {}".format(w_id, d_id, t, l))
     # print("-----Stock Level-----")
     logging.info("-----Stock Level-----")
@@ -35,7 +35,8 @@ def get_stock_level(conn, w_id, d_id, t, l):
     logging.info("[W_ID, Num_I with S_Quantity < {}]".format(t))
     logging.info("{}, {}".format(w_id, count[0]))
 
-    return time.thread_time()
+    end = time.time()
+    return end - start
 
 
 def get_district(conn, warehouse_id, district_id):

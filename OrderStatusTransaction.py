@@ -10,6 +10,7 @@ debug = False
 
 
 def req_order_status(conn, c_w_id, c_d_id, c_id):
+    start = time.time()
     # print("-----Order Status-----")
     logging.info("-----Order Status-----")
 
@@ -58,7 +59,8 @@ def req_order_status(conn, c_w_id, c_d_id, c_id):
         logging.info("{}, {}, {}, {}, {}".format(
             row[0], row[1], row[2], row[3], row[4]))
 
-    return time.thread_time()
+    end = time.time()
+    return end - start
 
 
 def get_customer(conn, warehouse_id, district_id, customer_id):
