@@ -92,13 +92,21 @@ bash LoadData.sh
 ```
 python Driver.py -EN <Experiment Number> -> <5/6/7/8>
 ```
+Note: Experiment 5 & 7 -> 4 servers active, 6 & 8 -> 5 servers active <br>
+      Recommended to run 6 & 8 followed by 5 & 7
+      
+### Run with 4 servers
+In order to simulate only 4 servers are running, we kill one of the nodes, E.g. node 5
+```
+cockroach quit --insecure --host=<IP ADDRESS>:25271
+```
 ### Get Throughput.csv file
 ```
 python Throughput.py
 ```
 ### Get DBState.csv file
 ```
-python DBState.py
+python DBState.py -EN <Experiment Number>
 ```
 
 
