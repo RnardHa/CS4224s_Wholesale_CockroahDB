@@ -31,7 +31,7 @@ def main():
         elif (int(split[0]) == 7):
             case7_throughput.append(float(split[4]))
         elif (int(split[0]) == 8):
-            case7_throughput.append(float(split[4]))
+            case8_throughput.append(float(split[4]))
 
     with open('throughput.csv', 'a+', newline='') as file:
         if len(case5_throughput) > 0:

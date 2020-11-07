@@ -31,6 +31,7 @@ def make_delivery(conn, w_id, carrier_id):
 
 def get_order(conn, warehouse_id):
     val = get_o_id(conn, warehouse_id)
+    rows = []
     if (len(val) > 0):
         o_id = val[0]
         with conn.cursor() as cur:
@@ -41,7 +42,7 @@ def get_order(conn, warehouse_id):
             rows = cur.fetchall()
             conn.commit()
 
-        return rows
+    return rows
 
 
 def get_o_id(conn, warehouse_id):

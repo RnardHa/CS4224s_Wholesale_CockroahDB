@@ -120,7 +120,7 @@ def insert_order(conn, warehouse_id, district_id, order_id, customer_id, m_count
     time = datetime.datetime.now()
     with conn.cursor() as cur:
         cur.execute(
-            "Insert into orders (o_w_id, o_d_id, o_id, o_c_id, o_carrier_id, o_ol_cnt, o_all_local, o_entry_d) values (%s, %s, %s, %s, NULL, %s, %s, %s)", [warehouse_id, district_id, order_id, customer_id, m_count, order_all_local, time])
+            "UPSERT into orders (o_w_id, o_d_id, o_id, o_c_id, o_carrier_id, o_ol_cnt, o_all_local, o_entry_d) values (%s, %s, %s, %s, NULL, %s, %s, %s)", [warehouse_id, district_id, order_id, customer_id, m_count, order_all_local, time])
         logging.debug("insert_order(): status message: %s",
                       cur.statusmessage)
 

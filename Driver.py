@@ -250,13 +250,15 @@ def main():
         opt.address)
 
     # EXP num - cleint pair
-    exp = {'5': '20', '6': '20', '7': '40', '8': '40'}
+    exp = {'5': '5', '6': '20', '7': '40', '8': '20'}
     exp_num = opt.exp_num
     numClient = exp[opt.exp_num]
 
     threadList = []
 
+    # errorList = [2, 4, 8, 9]
     for index in range(0, int(numClient)):
+        # for index in errorList:
         thread_id = index + 1
         input_file = "project-files/xact-files/" + str(thread_id) + '.txt'
         thread = mainThread(thread_id, input_file, dsn)

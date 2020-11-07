@@ -131,15 +131,12 @@ def get_customer(conn, warehouse_id, district_id, customer_id):
 
 
 def get_max_orderlines(conn, warehouse_id, district_id, order_id):
-    ol_quantity = None
     ol_quantity = get_max_quantity(conn, warehouse_id, district_id, order_id)
-
-    rows = None
-
-    if ol_quantity is not None:
+    rows = []
+    if len(ol_quantity) > 0:
         with conn.cursor() as cur:
             cur.execute(
-                "Select ol_i_id, ol_quantity from orderline where ol_w_id = %s and ol_d_id = %s and ol_o_id = %s and ol_quantity = %s", [warehouse_id, district_id, order_id, ol_quantity])
+                "Select ol_i_id, ol_quantity from orderline where ol_w_id = %s and ol_d_id = %s and ol_o_id = %s and ol_quantity = %s", [warehouse_id, district_id, order_id, ol_quantity[0]])
             logging.debug("make payment(): status message: %s",
                           cur.statusmessage)
             rows = cur.fetchall()
@@ -157,7 +154,7 @@ def get_max_quantity(conn, warehouse_id, district_id, order_id):
         rows = cur.fetchall()
         conn.commit()
 
-        return rows[0]
+        return rows
 
 
 def get_item(conn, item_id):
