@@ -250,7 +250,7 @@ def main():
         opt.address)
 
     # EXP num - cleint pair
-    exp = {'5': '5', '6': '20', '7': '40', '8': '20'}
+    exp = {'5': '20', '6': '20', '7': '40', '8': '40'}
     exp_num = opt.exp_num
     numClient = exp[opt.exp_num]
 
